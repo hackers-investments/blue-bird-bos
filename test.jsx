@@ -67,10 +67,11 @@ State.init({
   balance: 0,
   chainId: undefined,
   fromChainId: undefined,
-  payAmount: 1,
-  toChainId: 'Matic',
-  buyAmount: 1,
+  payAmount: '0.0001',
+  toChainId: undefined,
+  buyAmount: '0.0001',
   activeView: 'exchange',
+  myOrders: [],
   err: undefined,
   result: ''
 });
@@ -159,20 +160,53 @@ const create = () => {
   );
   State.update({ result: typeof Big(state.payAmount) });
   const payAmountPow = ethers.utils
-    .parseUnits(state.payAmount, tokenDecimals)
+    .parseUnits(state.payAmount, 18)
     .toHexString();
-  // const buyAmountPow = Big(state.buyAmount).mul(Big(10).Pow(18));
-  // swap.create(
-  //   state.toChainId,
-  //   ZERO_ADDRESS,
-  //   payAmountPow,
-  //   ZERO_ADDRESS,
-  //   buyAmountPow,
-  //   {
-  //     value: payAmountPow,
-  //   }
-  // );
+  const buyAmountPow = ethers.utils
+    .parseUnits(state.buyAmount, 18)
+    .toHexString();
+  swap.create(
+    state.toChainId,
+    ZERO_ADDRESS,
+    payAmountPow,
+    ZERO_ADDRESS,
+    buyAmountPow,
+    {
+      value: payAmountPow
+    }
+  );
 };
+
+const listMyOrder = () => {
+  console.log(sender);
+  const myOrders = fetch(
+    'https://api.studio.thegraph.com/query/47853/test/v0.0.1',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        query: `{
+        newLocks(owner: "${sender}") {
+          lockId
+          payToken
+          payTokenAmount
+          toChain
+          buyToken
+          buyTokenAmount
+          owner
+        }
+      }`
+      })
+    }
+  );
+
+  State.update({ myOrders: myOrders.body.data.newLocks });
+  // console.log(state.myOrders[0]);
+};
+
+listMyOrder();
 
 return (
   <Theme>
@@ -273,13 +307,14 @@ return (
                         )
                       </h4>
                       <input
-                        type="number"
+                        type="text"
                         className="form-control"
-                        value={payAmount}
                         placeholder="amount to transfer"
+                        value={state.payAmount}
                         onChange={(e) => {
                           State.update({ payAmount: e.target.value });
                         }}
+                        onFocus
                       />
                     </div>
                     <div className="col-6">
@@ -299,10 +334,10 @@ return (
                         )
                       </h4>
                       <input
-                        type="number"
+                        type="text"
                         className="form-control"
-                        value={buyAmount}
                         placeholder="amount to transfer"
+                        value={state.buyAmount}
                         onChange={(e) => {
                           State.update({ buyAmount: e.target.value });
                         }}
@@ -326,11 +361,15 @@ return (
           <div className="row mb-3">
             <div className="col-12">
               <h3>Listed Orders</h3>
-            </div>
-            <div className="col">
-              <div className="border rounded p-3">
-                <div>Address : {sender}</div>
-                <div>Balance : {state.balance} ETH</div>
+              <div className="row">
+                {state.myOrders.map((order) => (
+                  <div className="col">
+                    <div className="border rounded p-3">
+                      <div>id : {order.lockId}</div>
+                      <div>from : {CHAIN_ID_MAP[state.chainId]}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
