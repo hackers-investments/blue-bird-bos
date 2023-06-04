@@ -16,16 +16,226 @@ const NETWORK_CONFIGS = {
   ETH_GOERLI: {
     chainId: '0x5',
     chainName: 'Ethereum(Goerli)',
-    currency: 'ETH'
+    currency: 'ETH',
+    swap: '0x9d340f30af6de05a3909a52f4dcc9350ffb67ecb'
   },
   MATIC: {
     chainId: '0x89',
     chainName: 'Matic',
-    currency: 'MATIC'
+    currency: 'MATIC',
+    swap: '0x7660397e9430ec65eba63684298482a48470d90a'
   }
 };
 
 const ABI = [
+  {
+    inputs: [],
+    stateMutability: 'nonpayable',
+    type: 'constructor'
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'lockId',
+        type: 'uint256'
+      }
+    ],
+    name: 'Canceled',
+    type: 'event'
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'lockId',
+        type: 'uint256'
+      }
+    ],
+    name: 'Executed',
+    type: 'event'
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: 'address',
+        name: 'owner',
+        type: 'address'
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'lockId',
+        type: 'uint256'
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'toChain',
+        type: 'uint256'
+      },
+      {
+        indexed: false,
+        internalType: 'address',
+        name: 'payToken',
+        type: 'address'
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'payTokenAmount',
+        type: 'uint256'
+      },
+      {
+        indexed: false,
+        internalType: 'address',
+        name: 'buyToken',
+        type: 'address'
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'buyTokenAmount',
+        type: 'uint256'
+      }
+    ],
+    name: 'NewLock',
+    type: 'event'
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'previousOwner',
+        type: 'address'
+      },
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'newOwner',
+        type: 'address'
+      }
+    ],
+    name: 'OwnershipTransferred',
+    type: 'event'
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'lockId',
+        type: 'uint256'
+      }
+    ],
+    name: 'RequestCancel',
+    type: 'event'
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'lockId',
+        type: 'uint256'
+      },
+      {
+        indexed: false,
+        internalType: 'address',
+        name: 'recipient',
+        type: 'address'
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'recipientLockId',
+        type: 'uint256'
+      }
+    ],
+    name: 'SetRecipient',
+    type: 'event'
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'lockId',
+        type: 'uint256'
+      },
+      {
+        internalType: 'bytes32',
+        name: 'digest',
+        type: 'bytes32'
+      },
+      {
+        internalType: 'uint8',
+        name: 'v',
+        type: 'uint8'
+      },
+      {
+        internalType: 'bytes32',
+        name: 'r',
+        type: 'bytes32'
+      },
+      {
+        internalType: 'bytes32',
+        name: 's',
+        type: 'bytes32'
+      }
+    ],
+    name: 'cancel',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function'
+  },
+  {
+    inputs: [
+      {
+        internalType: 'string',
+        name: 'action',
+        type: 'string'
+      },
+      {
+        internalType: 'uint256',
+        name: 'lockId',
+        type: 'uint256'
+      },
+      {
+        internalType: 'bytes32',
+        name: 'digest',
+        type: 'bytes32'
+      },
+      {
+        internalType: 'uint8',
+        name: 'v',
+        type: 'uint8'
+      },
+      {
+        internalType: 'bytes32',
+        name: 'r',
+        type: 'bytes32'
+      },
+      {
+        internalType: 'bytes32',
+        name: 's',
+        type: 'bytes32'
+      }
+    ],
+    name: 'checkSign',
+    outputs: [],
+    stateMutability: 'view',
+    type: 'function'
+  },
   {
     inputs: [
       {
@@ -54,13 +264,235 @@ const ABI = [
         type: 'uint256'
       }
     ],
+    name: 'create',
+    outputs: [],
     stateMutability: 'payable',
-    type: 'function',
-    name: 'create'
+    type: 'function'
+  },
+  {
+    inputs: [],
+    name: 'emitter',
+    outputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address'
+      }
+    ],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'lockId',
+        type: 'uint256'
+      },
+      {
+        internalType: 'bytes32',
+        name: 'digest',
+        type: 'bytes32'
+      },
+      {
+        internalType: 'uint8',
+        name: 'v',
+        type: 'uint8'
+      },
+      {
+        internalType: 'bytes32',
+        name: 'r',
+        type: 'bytes32'
+      },
+      {
+        internalType: 'bytes32',
+        name: 's',
+        type: 'bytes32'
+      }
+    ],
+    name: 'execute',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function'
+  },
+  {
+    inputs: [
+      {
+        internalType: 'bytes32',
+        name: 'messageHash',
+        type: 'bytes32'
+      }
+    ],
+    name: 'getEthSignedHash',
+    outputs: [
+      {
+        internalType: 'bytes32',
+        name: '',
+        type: 'bytes32'
+      }
+    ],
+    stateMutability: 'pure',
+    type: 'function'
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'lockId',
+        type: 'uint256'
+      },
+      {
+        internalType: 'string',
+        name: 'action',
+        type: 'string'
+      }
+    ],
+    name: 'hash',
+    outputs: [
+      {
+        internalType: 'bytes32',
+        name: '',
+        type: 'bytes32'
+      }
+    ],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
+    inputs: [],
+    name: 'lockIndex',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256'
+      }
+    ],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256'
+      }
+    ],
+    name: 'locks',
+    outputs: [
+      {
+        internalType: 'address',
+        name: 'owner',
+        type: 'address'
+      },
+      {
+        internalType: 'address',
+        name: 'recipient',
+        type: 'address'
+      },
+      {
+        internalType: 'address',
+        name: 'token',
+        type: 'address'
+      },
+      {
+        internalType: 'uint256',
+        name: 'amount',
+        type: 'uint256'
+      },
+      {
+        internalType: 'bool',
+        name: 'executed',
+        type: 'bool'
+      }
+    ],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
+    inputs: [],
+    name: 'owner',
+    outputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address'
+      }
+    ],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
+    inputs: [],
+    name: 'renounceOwnership',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function'
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'lockId',
+        type: 'uint256'
+      }
+    ],
+    name: 'requesetCancel',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function'
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '_emitter',
+        type: 'address'
+      }
+    ],
+    name: 'setEmitter',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function'
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'lockId',
+        type: 'uint256'
+      },
+      {
+        internalType: 'address',
+        name: 'recipient',
+        type: 'address'
+      },
+      {
+        internalType: 'uint256',
+        name: 'recipientLockId',
+        type: 'uint256'
+      }
+    ],
+    name: 'setRecipient',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function'
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'newOwner',
+        type: 'address'
+      }
+    ],
+    name: 'transferOwnership',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function'
   }
 ];
-
-const BB_SWAP = '0x9D340f30aF6dE05A3909a52F4Dcc9350Ffb67ecB';
 
 // State Initialize
 State.init({
@@ -72,6 +504,9 @@ State.init({
   buyAmount: '0.0001',
   activeView: 'exchange',
   myOrders: [],
+  listedOrders: [],
+  interLockMyOrder: undefined,
+  interLockCounterOrderId: undefined,
   err: undefined,
   result: ''
 });
@@ -91,7 +526,9 @@ if (
         State.update({
           chainId: res.chainId,
           fromChainId: res.chainId,
-          toChainId: Object.keys(CHAIN_ID_MAP).filter((x) => x !== chainId)[0]
+          toChainId: Object.keys(CHAIN_ID_MAP).filter(
+            (x) => x !== res.chainId
+          )[0]
         });
       } else {
         State.update({
@@ -152,13 +589,13 @@ const ChainSelect = ({ chainIdState, chainIdMap }) => {
 const create = () => {
   const provider = Ethers.provider();
   const signer = provider.getSigner();
-
+  console.log(state.fromChainId);
   const swap = new ethers.Contract(
-    '0x9d340f30af6de05a3909a52f4dcc9350ffb67ecb',
+    NETWORK_CONFIGS[CHAIN_ID_MAP[state.fromChainId]].swap,
     ABI,
     signer
   );
-  State.update({ result: typeof Big(state.payAmount) });
+
   const payAmountPow = ethers.utils
     .parseUnits(state.payAmount, 18)
     .toHexString();
@@ -177,8 +614,7 @@ const create = () => {
   );
 };
 
-const listMyOrder = () => {
-  console.log(sender);
+const loadMyOrders = () => {
   const myOrders = fetch(
     'https://api.studio.thegraph.com/query/47853/test/v0.0.1',
     {
@@ -188,7 +624,7 @@ const listMyOrder = () => {
       },
       body: JSON.stringify({
         query: `{
-        newLocks(owner: "${sender}") {
+        newLocks(where: {owner: "${sender}"}) {
           lockId
           payToken
           payTokenAmount
@@ -201,12 +637,40 @@ const listMyOrder = () => {
       })
     }
   );
-
   State.update({ myOrders: myOrders.body.data.newLocks });
-  // console.log(state.myOrders[0]);
+  if (!myOrders.ok) return 'Loading...';
 };
 
-listMyOrder();
+const loadListedOrders = () => {
+  const listedOrders = fetch(
+    'https://api.studio.thegraph.com/query/47853/test/v0.0.1',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        query: `{
+        newLocks(where: {and: [{owner_not: "${sender}"},{toChain: "${state.fromChainId}"}]}) {
+          lockId
+          payToken
+          payTokenAmount
+          toChain
+          buyToken
+          buyTokenAmount
+          owner
+        }
+      }`
+      })
+    }
+  );
+  if (!listedOrders.ok) return 'Loading...';
+  console.log(state.listedOrders);
+  State.update({ listedOrders: listedOrders.body.data.newLocks });
+};
+
+loadMyOrders();
+loadListedOrders();
 
 return (
   <Theme>
@@ -248,7 +712,13 @@ return (
         <div className="row mb-3">
           <div class="col-12">
             <button
-              className="btn btn-warning w-50"
+              className={
+                'btn ' +
+                (state.activeView === 'exchange'
+                  ? 'btn-warning'
+                  : 'btn-secondary') +
+                ' w-50'
+              }
               style={{
                 borderTopRightRadius: '0',
                 borderBottomRightRadius: '0',
@@ -261,7 +731,13 @@ return (
               Exchange
             </button>
             <button
-              className="btn btn-secondary w-50"
+              className={
+                'btn ' +
+                (state.activeView === 'dashboard'
+                  ? 'btn-warning'
+                  : 'btn-secondary') +
+                ' w-50'
+              }
               style={{
                 borderTopLeftRadius: '0',
                 borderBottomLeftRadius: '0',
@@ -361,16 +837,56 @@ return (
           <div className="row mb-3">
             <div className="col-12">
               <h3>Listed Orders</h3>
-              <div className="row">
-                {state.myOrders.map((order) => (
-                  <div className="col">
-                    <div className="border rounded p-3">
-                      <div>id : {order.lockId}</div>
-                      <div>from : {CHAIN_ID_MAP[state.chainId]}</div>
+              {state.listedOrders.map((order) => (
+                <div className="col-12 mb-2">
+                  <div className="border rounded p-3">
+                    <div className="row">
+                      <div className="col-9">
+                        <div>order_id : {order.lockId}</div>
+                        {/**/}
+                        <div>
+                          {' '}
+                          Paying{' '}
+                          {Big(order.payTokenAmount)
+                            .div(Big(10).pow(18))
+                            .toFixed(6)}{' '}
+                          {
+                            NETWORK_CONFIGS[CHAIN_ID_MAP[order.toChain]]
+                              .currency
+                          }{' '}
+                          from {CHAIN_ID_MAP[order.toChain]}
+                        </div>
+                        <div>
+                          {' '}
+                          Buying{' '}
+                          {Big(order.buyTokenAmount)
+                            .div(Big(10).pow(18))
+                            .toFixed(6)}{' '}
+                          {
+                            NETWORK_CONFIGS[CHAIN_ID_MAP[state.chainId]]
+                              .currency
+                          }{' '}
+                          from {CHAIN_ID_MAP[parseInt(state.chainId)]}
+                        </div>
+                        <div>owner: {order.owner}</div>
+                      </div>
+                      <div className="col-3">
+                        <button
+                          className="btn btn-primary w-100 mb-2"
+                          style={{
+                            float: 'center'
+                          }}
+                          onClick={() => {
+                            setRecipient(order.lockId);
+                          }}
+                        >
+                          Take
+                        </button>
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -380,7 +896,62 @@ return (
             display: state.activeView === 'dashboard' ? 'block' : 'none'
           }}
         >
-          dashabord view
+          <div className="row mb-3">
+            <div className="col-12">
+              <h3>My Orders</h3>
+              <div className="row">
+                {state.myOrders.map((order) => (
+                  <div className="col-12 mb-2">
+                    <div className="border rounded p-3">
+                      <div className="row">
+                        <div className="col-9">
+                          <div>order_id : {order.lockId}</div>
+                          <div>
+                            {' '}
+                            Paying{' '}
+                            {Big(order.payTokenAmount)
+                              .div(Big(10).pow(18))
+                              .toFixed(6)}{' '}
+                            {
+                              NETWORK_CONFIGS[CHAIN_ID_MAP[state.chainId]]
+                                .currency
+                            }{' '}
+                            from {CHAIN_ID_MAP[state.chainId]}
+                          </div>
+                          <div>
+                            {' '}
+                            Buying{' '}
+                            {Big(order.buyTokenAmount)
+                              .div(Big(10).pow(18))
+                              .toFixed(6)}{' '}
+                            {
+                              NETWORK_CONFIGS[CHAIN_ID_MAP[order.toChain]]
+                                .currency
+                            }{' '}
+                            from {CHAIN_ID_MAP[parseInt(order.toChain)]}
+                          </div>
+                          <div>Owner : {order.owner} </div>
+                        </div>
+                        <div className="col-3">
+                          <button
+                            className="btn btn-danger w-100"
+                            style={{
+                              float: 'center'
+                            }}
+                            onClick={() => {
+                              State.update({ activeView: 'exchange' });
+                            }}
+                          >
+                            CANCEL
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       {state.result}
